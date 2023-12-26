@@ -35,7 +35,7 @@ sap.ui.define([], function () {
 			var count = 0;
 			if (val!= null) {
 				val.split("#").forEach(index => {
-					if (index != '1000' && index !='' && index != null && index != "null" && index != undefined) {
+					if (index != '1000' && index !=''&& index != null && index != "null" && index != undefined) {
 						count++
 					}
 				})
@@ -92,7 +92,15 @@ sap.ui.define([], function () {
 		TotalHoursCalculation:function(paycode,val){
 			if(val !=="" && val != null && val != "null" && val != undefined){
 				var hours = 0;
-				if(paycode != '1095' && paycode != '1225' && paycode != 'BOA' && paycode != 'BT' && paycode != 'BSP' && paycode != 'BN' && paycode != '1230' && paycode != '1070'){
+				if(paycode == null || paycode == ""){
+					val.split("#").forEach(index => {
+						if (index != '') {
+							hours += Number(index);
+						}
+					})
+					return hours;
+				}
+				if(paycode.includes("1095") != true && paycode.includes("1225") != true && paycode.includes("BOA") != true && paycode.includes("BT") != true && paycode.includes("BSP") != true && paycode.includes("BN") != true && paycode.includes("1230") != true && paycode.includes("1070") != true){
 					val.split("#").forEach(index => {
 						if (index != '') {
 							hours += Number(index);

@@ -33,7 +33,14 @@
                     <fb:control>
                         <ComboBox
                             id="idPayPeriodComboBox"
-                            placeholder="{i18n>select}" items="{valueHelp>/payperiod}" change="onChangePayPeriod"
+                            placeholder="{i18n>select}"
+                            items="{
+			                    path: 'valueHelp>/payperiod',
+			                    sorter: {
+				                        path: 'processingRunId'
+			                        }
+		                        }"
+                            change="onChangePayPeriod"
                         >
                             <items>
                                 <core:Item

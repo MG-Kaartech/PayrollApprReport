@@ -1111,6 +1111,8 @@ sap.ui.define([
                     success: function (odata) {
                         for (var i = 0; i < odata.results.length; i++) {
                             odata.results[i].TotalHours = odata.results[i].TotalHours.replaceAll(".", ":");
+                            odata.results[i].MinDate = this.oFromDate;
+                            odata.results[i].MaxDate = this.oToDate;
                         }
                         sap.ui.getCore().byId("idFormTotalValues").setNumber(TotalHoursForPopup);//oFormTotalHours
                         this.getView().getModel("timePeriod").setProperty("/timesheetData", odata.results);
@@ -1189,6 +1191,15 @@ sap.ui.define([
                     var path = sItems[i].getBindingContextPath();
                     var idx = parseInt(path.substring(path.lastIndexOf('/') + 1), 10);
                     oTableData[idx].DELETED = true;
+                    // RT OT caluculation
+                    var oRTOTpayload = {};
+                    oRTOTpayload.AppName = oTableData[0].AppName;
+                    oRTOTpayload.EmployeeID = oTableData[0].EmployeeID;
+                    oRTOTpayload.PayPeriodBeginDate = oTableData[0].PayPeriodBeginDate;
+                    oRTOTpayload.PayPeriodEndDate = oTableData[0].PayPeriodEndDate;
+                    oRTOTpayload.OtFrequency = oTableData[0].OtFrequency ? "":oTableData[0].OtFrequency;
+                    oRTOTpayload.Date =  "";
+
                     if (oTableData[idx].PayCode == "2000") {
                         // payload for sf call - vacation leave update
                         sfpayload.externalCode = timestamp + dyear.toString() + dmonth.toString() + dday.toString() + oTableData[0].EmployeeID + i;
@@ -1237,11 +1248,36 @@ sap.ui.define([
                             }.bind(this));
                         }
                         this.onSearch(); // refreshing the data
+                        this.onRTOTCalculationCall(oRTOTpayload); // RT OT calculation
                     }.bind(this), function (oError) {
                         MessageBox.error(this.getResourceBundle().getText("errorBatch"));
                     }.bind(this));
                 }
                 sap.ui.getCore().byId("idTimePeriodTable").removeSelections();
+            },
+            onRTOTCalculationCall: function (payload) {
+                var oModel = this.getOwnerComponent().getModel();
+                var oDataModel = new sap.ui.model.odata.ODataModel(oModel.sServiceUrl);
+                var oParams = {
+                    EmployeeID: payload.EmployeeID,
+                    PayPeriodBeginDate: payload.PayPeriodBeginDate,
+                    PayPeriodEndDate: payload.PayPeriodEndDate,
+                    AppName: payload.AppName,
+                    OtFrequency :payload.OtFrequency,
+                    Date :payload.Date
+                };
+                oDataModel.callFunction("/RTOTCalulation", {
+                    urlParameters: oParams,
+                    method: "GET",
+                    success: function (oData, oResponse) {
+                        var data = oData;
+                        console.log("RT OT Done");
+                    }.bind(this),
+                    error: function (oError) {
+                        MessageToast.show("No data");
+                        console.log("No data");
+                    }
+                });
             },
             onChangeF4Help: function (oEvent) {
                 oEvent.getSource().setValue("");
@@ -1536,6 +1572,14 @@ sap.ui.define([
                             batchOperation = oDataModel.createBatchOperation("/TimeSheetDetails", "POST", payload);
                         }
                         batchArray.push(batchOperation);
+                        // RT OT caluculation
+                        var oRTOTpayload = {};
+                        oRTOTpayload.AppName = timePeriodData[0].AppName;
+                        oRTOTpayload.EmployeeID = timePeriodData[0].EmployeeID;
+                        oRTOTpayload.PayPeriodBeginDate = timePeriodData[0].PayPeriodBeginDate;
+                        oRTOTpayload.PayPeriodEndDate = timePeriodData[0].PayPeriodEndDate;
+                        oRTOTpayload.OtFrequency = timePeriodData[0].OtFrequency == null ? "": timePeriodData[0].OtFrequency;
+                        oRTOTpayload.Date =  "";
                     }
                 } else { // import holiday approval
                     var selectedPaths = sap.ui.getCore().byId("idImportHolidays").getSelectedContextPaths();
@@ -1569,6 +1613,7 @@ sap.ui.define([
                             }
                             if (param == "TimePeriodSave") {
                                 this.onSearch(); // refresh time sheet details
+                                this.onRTOTCalculationCall(oRTOTpayload); // RT OT calculation
                             }
                         }
                     } catch (err) { }
@@ -1581,6 +1626,30 @@ sap.ui.define([
                     MessageBox.error(this.getResourceBundle().getText("errorBatch"));
                 }.bind(this));
                 try { this._oImportHolidayDialog.close(); } catch (err) { }
+            },
+            onRTOTCalculationCall: function (payload) {
+                var oModel = this.getOwnerComponent().getModel();
+                var oDataModel = new sap.ui.model.odata.ODataModel(oModel.sServiceUrl);
+                var oParams = {
+                    EmployeeID: payload.EmployeeID,
+                    PayPeriodBeginDate: payload.PayPeriodBeginDate,
+                    PayPeriodEndDate: payload.PayPeriodEndDate,
+                    AppName: payload.AppName,
+                    OtFrequency :payload.OtFrequency,
+                    Date :payload.Date
+                };
+                oDataModel.callFunction("/RTOTCalulation", {
+                    urlParameters: oParams,
+                    method: "GET",
+                    success: function (oData, oResponse) {
+                        var data = oData;
+                        console.log("RT OT Done");
+                    }.bind(this),
+                    error: function (oError) {
+                        MessageToast.show("No data");
+                        console.log("No data");
+                    }
+                });
             },
             getApplicationID: function () {
                 return this.getOwnerComponent().getManifestEntry("/sap.app").id.replaceAll(".", "");
@@ -1899,11 +1968,11 @@ sap.ui.define([
                         property: "OverTime"
                     },
                     {
-                        label: "PayCode",
+                        label: "PayCode ID",
                         property: "PayCode"
                     },
                     {
-                        label: "PayPeriod Description",
+                        label: "PayCode Description",
                         property:"PayPeriodDescription"
                     },
                     {

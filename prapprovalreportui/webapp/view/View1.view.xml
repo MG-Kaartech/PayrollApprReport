@@ -309,9 +309,14 @@
             <OverflowToolbar>
                 <ToolbarSpacer />
                 <Button
+                    text="{i18n>approve}"
+                    press="onPressApprove"
+                    class="sapUiSmallMarginBeginEnd"
+                />
+                <Button
                     icon="sap-icon://validate"
                     type="Success"
-                    text="{i18n>approve}"
+                    text="{i18n>submitForPayroll}"
                     press="onPressApproveCPI"
                     class="sapUiSmallMarginBeginEnd"
                 />

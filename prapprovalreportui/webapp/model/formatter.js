@@ -107,6 +107,14 @@ sap.ui.define([], function () {
 				return true;
 			}
 		},
+		SickDateEditable:function(NewRecord){
+			if (NewRecord == true) {
+				return true;
+			}
+			else{
+				return false;
+			}
+		},
 		TotalHoursCalculation: function (paycode, val) {
 			if (val !== "" && val != null && val != "null" && val != undefined) {
 				var hours = 0;

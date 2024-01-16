@@ -512,9 +512,12 @@ sap.ui.define([
                 var sSelectedValue = this.getView().getModel("timePeriod").getProperty(this.oSelectedJobPath);
                 sSelectedValue.Job = sObj.ID;//sObj.Name;
                 sSelectedValue.CostCenter = "";
+                sSelectedValue.Section = "";
+                sSelectedValue.Phase = "";
                 sSelectedValue.Activity = "";
                 sSelectedValue.WorkOrder = "";
                 sSelectedValue.JobValueState = "None";
+                sSelectedValue.ProfitCenter = sObj.ProfitCenter;
                 this.JobID = sObj.ID;
                 this.getView().getModel("timePeriod").refresh();
                 this.oJobF4HelpCancel();
@@ -1039,6 +1042,8 @@ sap.ui.define([
                 if (empSubarea.length !== 0) {
                     this.PersonalSubArea = empSubarea[0].PersonnelSubArea;
                     this.Location = empSubarea[0].LocationCode;
+                    this.Ot_Threshold = empSubarea[0].Ot_Threshold;
+                    this.Ot_Frequency = empSubarea[0].Ot_Frequency;
                     var subarea = new sap.ui.model.Filter({
                         path: "cust_PSA_PersonnelSubareaID",
                         operator: sap.ui.model.FilterOperator.EQ,
@@ -1168,6 +1173,7 @@ sap.ui.define([
                     MessageBox.error(this.getResourceBundle().getText("errorAtlestSelectOneRecord"));
                     return;
                 }
+                this.getView().byId("idFinishDate").setEnabled(true);
                 // delete existing records
                 var oDeleteModel = this.getOwnerComponent().getModel();
                 var deletePayload = [];
@@ -1533,19 +1539,27 @@ sap.ui.define([
                         payload.CompanyName = timePeriodData[0].CompanyName;
                         payload.PayPeriodBeginDate = timePeriodData[0].PayPeriodBeginDate;
                         payload.PayPeriodEndDate = timePeriodData[0].PayPeriodEndDate;
-                        payload.WorkOrder = timePeriodData[i].WorkOrder;
-                        payload.PayCode = timePeriodData[i].PayCode;
-                        payload.Job = timePeriodData[i].Job;
-                        payload.Section = timePeriodData[i].Section;
-                        payload.Phase = timePeriodData[i].Phase;
-                        payload.CostCenter = timePeriodData[i].CostCenter;
+                        payload.PersonnelSubArea = timePeriodData[0].PersonnelSubArea == null ? "": timePeriodData[0].PersonnelSubArea;
+                        payload.LocationCode = timePeriodData[0].LocationCode == null ? "": timePeriodData[0].LocationCode;
+                        payload.OtThreshold = this.Ot_Threshold == null ? "": this.Ot_Threshold;
+                        payload.OtFrequency = this.Ot_Frequency == null? "": this.Ot_Frequency;
+                        payload.ManagerApprovalName = timePeriodData[i].ManagerApprovalName == null ? "": timePeriodData[i].ManagerApprovalName;
+                        payload.ManagerApprovalEmail = timePeriodData[i].ManagerApprovalEmail == null ? "": timePeriodData[i].ManagerApprovalEmail;
+                        payload.PayrollApprovalName = timePeriodData[i].PayrollApprovalName == null ? "":timePeriodData[i].PayrollApprovalName;
+                        payload.WorkOrder = timePeriodData[i].WorkOrder == null ? "": timePeriodData[i].WorkOrder;
+                        payload.PayCode = timePeriodData[i].PayCode == null ? "": timePeriodData[i].PayCode;
+                        payload.Job = timePeriodData[i].Job == null ? "": timePeriodData[i].Job;
+                        payload.ProfitCenter  = timePeriodData[i].ProfitCenter == null ? "":timePeriodData[i].ProfitCenter;
+                        payload.Section = timePeriodData[i].Section == null ? "": timePeriodData[i].Section;
+                        payload.Phase = timePeriodData[i].Phase == null ? "": timePeriodData[i].Phase;
+                        payload.CostCenter = timePeriodData[i].CostCenter == null ? "": timePeriodData[i].CostCenter;
                         payload.SaveSubmitStatus = timePeriodData[i].SaveSubmitStatus;
-                        payload.PayrollApprovalStatus = timePeriodData[i].PayrollApprovalStatus;
+                        payload.PayrollApprovalStatus = timePeriodData[i].PayrollApprovalStatus == null ? "": timePeriodData[i].PayrollApprovalStatus;
                         payload.TotalHours = timePeriodData[i].TotalHours.replaceAll(":", ".");
-                        payload.Activity = timePeriodData[i].Activity;
+                        payload.Activity = timePeriodData[i].Activity == null ? "": timePeriodData[i].Activity;
+                        payload.SequenceNo =  timePeriodData[i].SequenceNo == null ? "": timePeriodData[i].SequenceNo;
                         payload.UpdateIndicator = timePeriodData[i].UpdateIndicator == null ? "" : timePeriodData[i].UpdateIndicator;
-                        payload.PersonnelSubArea = timePeriodData[i].PersonnelSubArea;
-                        payload.LocationCode = timePeriodData[i].LocationCode;
+                        
                         // sick/vacation leave service call for sf
                         var extcode = timestamp + dyear.toString() + dmonth.toString() + dday.toString() + timePeriodData[0].EmployeeID + i;
                         if ((timePeriodData[i].PayCode == "1140" || timePeriodData[i].PayCode == "2000") && timePeriodData[i].NewRecord == true) {
